@@ -5,6 +5,12 @@
     <title>Welcome to Socket Room</title>
     <script src="jquery-3.1.1.js"></script>
     <script src="/socket.io/socket.io.js"></script>
+    <style media="screen">
+      .active{
+        background-color: yellow;
+        color: red;
+      }
+    </style>
     <script type="text/javascript">
       var socket = io();
       $(document).ready(function () {
@@ -13,10 +19,38 @@
           socket.emit('CLIENT_CREATE_NEW_ROOM', $('#txt-room').val());
         });
 
+        $('#btn-chat').click(function () {
+          socket.emit('CLIENT_SEND_MESSAGE_TO_ROOM',
+          {roomName: activeRoom, msg: $('#txt-chat').val()});
+        });
+
+        $(document).on("click", '.item-room', function () {
+          $('#list-room li').removeClass('active');
+          $(this).addClass('active');
+          activeRoom = $(this).html();
+          socket.emit('CLIENT_JOIN_ROOM', activeRoom);
+        });
+
+        socket.on('ROOM_MESSAGE', function (data) {
+          alert(data);
+        });
+
+        socket.on('NEW_ROOM_ACCEPTED', function (roomName) {
+          $('#list-room').append(`<li class="item-room">${roomName}</li>`)
+        });
+
+        socket.on('SERVER_SEND_ROOM_ARRAY', function (arrRoom) {
+          arrRoom.forEach(function (e) {
+            $('#list-room').append(`<li class="item-room">${e}</li>`)
+          });
+        });
+
         socket.on('SERVER_CONFIRM_ROOM_NAME', function (data) {
           if (!data) {
             alert('Ten room da ton tai');
-          } 
+          } else {
+            $('#list-room').append(`<li class="item-room active">${data}</li>`)
+          }
         });
 
       });
@@ -24,9 +58,16 @@
   </head>
   <body>
     <div class="div-tao-room">
-      <input type="text" id="text-room" placeholder="Nhap ten room">
+      <input type="text" id="txt-room" placeholder="Nhap ten room">
       <br><br>
       <button id="btn-tao-room">Tao room</button>
+      <br>
+      <ul id="list-room"></ul>
+    </div>
+    <div class="div-chat">
+      <input type="text" id="txt-chat" placeholder="Chat here...">
+      <br><br>
+      <button id="btn-chat">Chat</button>
     </div>
 
   </body>
