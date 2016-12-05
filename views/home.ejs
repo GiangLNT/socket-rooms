@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Welcome to Socket Room</title>
+    <script src="jquery-3.1.1.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script type="text/javascript">
+      var socket = io();
+      $(document).ready(function () {
+
+        $('#btn-tao-room').click(function () {
+          socket.emit('CLIENT_CREATE_NEW_ROOM', $('#txt-room').val());
+        });
+
+        socket.on('SERVER_CONFIRM_ROOM_NAME', function (data) {
+          if (!data) {
+            alert('Ten room da ton tai');
+          } 
+        });
+
+      });
+    </script>
+  </head>
+  <body>
+    <div class="div-tao-room">
+      <input type="text" id="text-room" placeholder="Nhap ten room">
+      <br><br>
+      <button id="btn-tao-room">Tao room</button>
+    </div>
+
+  </body>
+</html>
