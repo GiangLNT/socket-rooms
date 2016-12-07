@@ -24,6 +24,36 @@
           {roomName: activeRoom, msg: $('#txt-chat').val()});
         });
 
+        var isFirst = true;
+
+        $('#txt-chat').keypress(function (e) {
+          if (isFirst) {
+            //Gui tin -> dang nhap van ban
+            socket.emit('SOMEONE_EDIT_MSG', '');
+            isFirst = false;
+          }
+          if (e.which == 13) {
+            isFirst = true;
+            $(this).val('');
+            // Gui tin -> ket thuc soan thao
+            socket.emit('SOMEONE_STOP_EDIT', '');
+          }
+        });
+
+        $('#txt-chat').blur(function () {
+          // Gui tin -> ket thuc soan thao
+          socket.emit('SOMEONE_STOP_EDIT', '');
+          isFirst = false;
+        });
+
+        socket.on('USER_EDIT', function () {
+          $('#enter-state').html('Ai do dang nhap van ban');
+        });
+
+        socket.on('STOP_EDIT', function () {
+          $('#enter-state').html('');
+        });
+
         $(document).on("click", '.item-room', function () {
           $('#list-room li').removeClass('active');
           $(this).addClass('active');
@@ -63,6 +93,7 @@
       <button id="btn-tao-room">Tao room</button>
       <br>
       <ul id="list-room"></ul>
+      <p id="enter-state"></p>
     </div>
     <div class="div-chat">
       <input type="text" id="txt-chat" placeholder="Chat here...">

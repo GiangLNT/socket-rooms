@@ -16,6 +16,7 @@ app.get('/', function (req, res) {
 });
 
 var mangRoom = [];
+var mangEdit = [];
 
 io.on('connection', function (socket) {
   console.log('Co nguoi ket noi');
@@ -25,6 +26,15 @@ io.on('connection', function (socket) {
   socket.on('CLIENT_CREATE_NEW_ROOM', function (data  ) {
     if(mangRoom.indexOf(data) == -1){
       socket.join(data);
+
+      if (socket.currentRoom != undefined) {
+        socket.leave(socket.currentRoom, function () {
+          console.log('leave finished');
+        });
+      }
+      console.log('erro here');
+      socket.currentRoom = data;
+
       socket.emit('SERVER_CONFIRM_ROOM_NAME', data);
       socket.broadcast.emit('NEW_ROOM_ACCEPTED', data);
       mangRoom.unshift(data);
@@ -34,12 +44,27 @@ io.on('connection', function (socket) {
   });
 
   socket.on('CLIENT_JOIN_ROOM', function (roomName) {
+    // socket.leave(socket.currentRoom);
     socket.join('roomName');
+    // socket.currentRoom = data;
   });
 
   socket.on('CLIENT_SEND_MESSAGE_TO_ROOM', function (data) {
     console.log(data);
     socket.broadcast.to(data.roomName).emit('ROOM_MESSAGE', data.msg);
+  });
+
+  socket.on('SOMEONE_EDIT_MSG', function () {
+    mangEdit.push(socket);
+    socket.broadcast.emit('USER_EDIT', '');
+  });
+
+  socket.on('SOMEONE_STOP_EDIT', function () {
+    var index = mangEdit.indexOf(socket.id);
+    mangEdit.splice(index, 1);
+    if (mangEdit.length == 0) {
+      io.emit('STOP_EDIT', '');
+    }
   });
 
 });
